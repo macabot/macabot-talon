@@ -8,7 +8,7 @@ open_whispr_is_holding = False
 
 @mod.action_class
 class Actions:
-    def whisper_start():
+    def open_whispr_start():
         """Triggered when F10 is initially pressed down"""
         global open_whispr_is_holding
 
@@ -25,7 +25,7 @@ class Actions:
         # Send a single TAP of the hotkey to toggle Whisper ON
         actions.key("ctrl-shift-f9")
 
-    def whisper_stop():
+    def open_whispr_stop():
         """Triggered when F10 is released"""
         global open_whispr_is_holding
         open_whispr_is_holding = False
