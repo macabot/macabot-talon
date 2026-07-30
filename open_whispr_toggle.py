@@ -2,38 +2,28 @@ from talon import Module, actions
 
 mod = Module()
 
-# Track OpenWhispr's state independently
-open_whispr_active = False
+# Tracks the physical key to prevent OS key-repeat spam
+open_whispr_is_holding = False
+
 
 @mod.action_class
 class Actions:
-    def toggle_open_whispr_safely():
-        """Toggles OpenWhispr and always forces Talon awake when finished"""
-        global open_whispr_active
+    def open_whispr_start():
+        """Triggered when F10 is initially pressed down"""
+        global open_whispr_is_holding
 
-        if not open_whispr_active:
-            # --- WE ARE STARTING OPENWHISPR ---
-            open_whispr_active = True
+        # If the OS sends a repeated "key down" while we are already holding it, ignore it!
+        if open_whispr_is_holding:
+            return
 
-            # Only disable Talon if it's actually awake to prevent the pop-up
-            if actions.speech.enabled():
-                actions.speech.disable()
+        open_whispr_is_holding = True
+        actions.user.talon_mute()
+        actions.key("ctrl-shift-f9")
 
-            # Trigger OpenWhispr to start listening
-            actions.key("ctrl-shift-f9")
+    def open_whispr_stop():
+        """Triggered when F10 is released"""
+        global open_whispr_is_holding
 
-        else:
-            # --- WE ARE STOPPING OPENWHISPR ---
-            open_whispr_active = False
-
-            # Trigger OpenWhispr to stop listening
-            actions.key("ctrl-shift-f9")
-
-            # Wake Talon back up
-            if not actions.speech.enabled():
-                actions.speech.enable()
-
-            # Force Talon into command mode
-            actions.mode.enable("command")
-            actions.mode.disable("sleep")
-            actions.mode.disable("dictation")
+        open_whispr_is_holding = False
+        actions.key("ctrl-shift-f9")
+        actions.user.talon_unmute()
