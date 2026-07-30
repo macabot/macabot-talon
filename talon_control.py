@@ -2,29 +2,24 @@ from talon import Module, actions, app
 
 mod = Module()
 
-# Fallback mic if active_microphone() isn't ready on boot
-last_mic = "System Default"
+# Using "System Default" ensures Talon always follows your Ubuntu Sound Settings
+TARGET_MIC = "System Default"
 
 @mod.action_class
 class Actions:
     def talon_mute():
         """Disconnect Talon from the microphone completely"""
-        global last_mic
-        current = actions.sound.active_microphone()
-        if current and current.lower() != "none":
-            last_mic = current
         actions.sound.set_microphone("None")
 
-        # Also put Talon to sleep such that the icon changes.
+        # Put Talon to sleep so the tray icon updates visually
         if actions.speech.enabled():
             actions.speech.disable()
 
     def talon_unmute():
-        """Reconnect Talon to the last active microphone"""
-        global last_mic
-        actions.sound.set_microphone(last_mic)
+        """Reconnect Talon to the System Default microphone"""
+        actions.sound.set_microphone(TARGET_MIC)
 
-        # Also wake up Talon such that the icon changes.
+        # Wake Talon up so the tray icon updates visually
         if not actions.speech.enabled():
             actions.speech.enable()
 
@@ -37,7 +32,7 @@ class Actions:
             actions.user.talon_mute()
 
 def on_ready():
-    """Capture initial active mic and mute Talon on startup"""
+    """Mute Talon on startup"""
     actions.user.talon_mute()
 
 app.register("ready", on_ready)
